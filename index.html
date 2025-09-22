@@ -34,6 +34,11 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus {
+            border-color: #40a7e3;
+            outline: none;
         }
         button {
             background-color: #40a7e3;
@@ -44,14 +49,43 @@
             cursor: pointer;
             font-size: 16px;
             width: 100%;
+            transition: background-color 0.3s;
         }
         button:hover {
             background-color: #2c96d4;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
         .success-message {
             color: green;
             text-align: center;
             margin-top: 15px;
+            padding: 10px;
+            background-color: #f0fff0;
+            border-radius: 5px;
+        }
+        .error-message {
+            color: #d9534f;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        .error-border {
+            border-color: #d9534f !important;
+        }
+        .field-required::after {
+            content: " *";
+            color: #d9534f;
+        }
+        .shake {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
     </style>
 </head>
@@ -60,67 +94,194 @@
         <h2>Форма обратной связи</h2>
         <form id="feedbackForm">
             <div class="form-group">
-                <label for="fio">ФИО:</label>
-                <input type="text" id="fio" required placeholder="Введите ваше полное имя">
+                <label for="fio" class="field-required">ФИО:</label>
+                <input type="text" id="fio" placeholder="Введите ваше полное имя">
+                <div id="fioError" class="error-message">Пожалуйста, введите ваше ФИО</div>
             </div>
-            
+
             <div class="form-group">
-                <label for="phone">Номер телефона:</label>
-                <input type="tel" id="phone" required placeholder="+7 (999) 999-99-99">
+                <label for="phone" class="field-required">Номер телефона:</label>
+                <input type="tel" id="phone" placeholder="+7 (999) 999-99-99">
+                <div id="phoneError" class="error-message">Пожалуйста, введите номер телефона</div>
             </div>
-            
+
             <div class="form-group">
-                <label for="email">E-mail:</label>
-                <input type="email" id="email" required placeholder="example@mail.com">
+                <label for="email" class="field-required">E-mail:</label>
+                <input type="email" id="email" placeholder="example@mail.com">
+                <div id="emailError" class="error-message">Пожалуйста, введите корректный email</div>
             </div>
-            
+
             <div class="form-group">
-                <label for="question">Ваш вопрос:</label>
-                <textarea id="question" rows="4" required placeholder="Опишите ваш вопрос подробно"></textarea>
+                <label for="question" class="field-required">Ваш вопрос:</label>
+                <textarea id="question" rows="4" placeholder="Опишите ваш вопрос подробно"></textarea>
+                <div id="questionError" class="error-message">Пожалуйста, введите ваш вопрос</div>
             </div>
-            
-            <button type="submit">Отправить</button>
+
+            <button type="submit" id="submitBtn">Отправить</button>
         </form>
         <div id="successMessage" class="success-message" style="display: none;">
-            Данные отправлены успешно! Закройте окно.
+            ✅ Данные отправлены успешно! Закройте окно.
         </div>
     </div>
 
     <script>
         // Инициализация Telegram Web App
         let tg = window.Telegram.WebApp;
-        
-        // Расширяем на весь экран
         tg.expand();
-        
-        // Получаем элемент формы и сообщения об успехе
+
+        // Элементы DOM
         const form = document.getElementById('feedbackForm');
         const successMessage = document.getElementById('successMessage');
-        
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Объект для хранения состояния валидации
+        const validationState = {
+            fio: false,
+            phone: false,
+            email: false,
+            question: false
+        };
+
+        // Функция для проверки валидности email
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Функция для проверки валидности телефона (базовая проверка)
+        function isValidPhone(phone) {
+            return phone.length >= 5; // Минимум 5 символов для телефона
+        }
+
+        // Функция валидации поля
+        function validateField(fieldId, value) {
+            const errorElement = document.getElementById(fieldId + 'Error');
+            const fieldElement = document.getElementById(fieldId);
+            
+            let isValid = false;
+            let errorMessage = '';
+
+            switch (fieldId) {
+                case 'fio':
+                    isValid = value.trim().length >= 2;
+                    errorMessage = isValid ? '' : 'ФИО должно содержать минимум 2 символа';
+                    break;
+                case 'phone':
+                    isValid = isValidPhone(value.trim());
+                    errorMessage = isValid ? '' : 'Номер телефона должен содержать минимум 5 символов';
+                    break;
+                case 'email':
+                    isValid = isValidEmail(value.trim());
+                    errorMessage = isValid ? '' : 'Введите корректный email адрес';
+                    break;
+                case 'question':
+                    isValid = value.trim().length >= 10;
+                    errorMessage = isValid ? '' : 'Вопрос должен содержать минимум 10 символов';
+                    break;
+            }
+
+            // Обновление UI
+            if (isValid) {
+                fieldElement.classList.remove('error-border');
+                errorElement.style.display = 'none';
+            } else {
+                fieldElement.classList.add('error-border');
+                errorElement.textContent = errorMessage;
+                errorElement.style.display = 'block';
+                
+                // Анимация "тряски" для привлечения внимания
+                fieldElement.classList.add('shake');
+                setTimeout(() => {
+                    fieldElement.classList.remove('shake');
+                }, 500);
+            }
+
+            validationState[fieldId] = isValid;
+            updateSubmitButton();
+            return isValid;
+        }
+
+        // Функция обновления состояния кнопки отправки
+        function updateSubmitButton() {
+            const allValid = Object.values(validationState).every(valid => valid);
+            submitBtn.disabled = !allValid;
+        }
+
+        // Функция проверки всей формы
+        function validateForm() {
+            let isFormValid = true;
+            
+            ['fio', 'phone', 'email', 'question'].forEach(fieldId => {
+                const value = document.getElementById(fieldId).value;
+                if (!validateField(fieldId, value)) {
+                    isFormValid = false;
+                }
+            });
+            
+            return isFormValid;
+        }
+
+        // Обработчики событий для реальной валидации при вводе
+        document.getElementById('fio').addEventListener('input', function() {
+            validateField('fio', this.value);
+        });
+
+        document.getElementById('phone').addEventListener('input', function() {
+            validateField('phone', this.value);
+        });
+
+        document.getElementById('email').addEventListener('input', function() {
+            validateField('email', this.value);
+        });
+
+        document.getElementById('question').addEventListener('input', function() {
+            validateField('question', this.value);
+        });
+
         // Обработчик отправки формы
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
+            // Финальная проверка формы
+            if (!validateForm()) {
+                // Показываем первое поле с ошибкой
+                const firstInvalidField = Object.keys(validationState).find(field => !validationState[field]);
+                if (firstInvalidField) {
+                    document.getElementById(firstInvalidField).scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }
+                return;
+            }
+
             // Собираем данные формы
             const data = {
-                fio: document.getElementById('fio').value,
-                phone: document.getElementById('phone').value,
-                email: document.getElementById('email').value,
-                question: document.getElementById('question').value
+                fio: document.getElementById('fio').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                question: document.getElementById('question').value.trim()
             };
+
+            // Блокируем кнопку на время отправки
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Отправка...';
 
             // Отправляем данные в Telegram бот
             tg.sendData(JSON.stringify(data));
-            
+
             // Показываем сообщение об успехе
             form.style.display = 'none';
             successMessage.style.display = 'block';
-            
-            // Закрываем Web App через 2 секунды
+
+            // Закрываем Web App через 3 секунды
             setTimeout(function() {
                 tg.close();
-            }, 2000);
+            }, 3000);
         });
+
+        // Изначально блокируем кнопку отправки
+        updateSubmitButton();
     </script>
 </body>
 </html>
