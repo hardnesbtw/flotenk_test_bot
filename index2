@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Политика конфиденциальности</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .policy-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .effective-date {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .section p, .section li {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .section ul {
+            padding-left: 20px;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .page-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #dee2e6;
+            transition: background 0.3s;
+        }
+
+        .dot.active {
+            background: #667eea;
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+                max-height: 65vh;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="policy-container">
+        <div class="header">
+            <h1>Политика обработки персональных данных</h1>
+            <div class="effective-date">Действует с 10.03.2025</div>
+        </div>
+
+        <div class="content" id="content">
+            <!-- Страница 1: Введение -->
+            <div class="page active" id="page1">
+                <div class="section">
+                    <h2>1. Введение</h2>
+                    <p>Настоящая Политика обработки персональных данных определяет принципы, порядок и условия обработки персональных данных при использовании чат-бота «Флотенк» в Telegram.</p>
+                </div>
+
+                <div class="section">
+                    <h2>Основные термины</h2>
+                    <ul>
+                        <li><strong>Оператор</strong> - АО «Флотенк», осуществляющее обработку персональных данных</li>
+                        <li><strong>Чат-бот</strong> - бот в Telegram для доступа к приложению</li>
+                        <li><strong>Пользователь</strong> - физическое лицо, использующее чат-бот</li>
+                        <li><strong>Персональные данные</strong> - информация, позволяющая идентифицировать личность</li>
+                    </ul>
+                </div>
+
+                <div class="highlight">
+                    <p><strong>Важно:</strong> Продолжая использование чат-бота, вы даёте согласие на обработку ваших персональных данных и подтверждаете ознакомление с настоящей Политикой.</p>
+                </div>
+            </div>
+
+            <!-- Страница 2: Цели обработки -->
+            <div class="page" id="page2">
+                <div class="section">
+                    <h2>2. Цели обработки данных</h2>
+                    <p>Мы обрабатываем ваши данные для следующих целей:</p>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Цель обработки</th>
+                                <th>Данные</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Идентификация в системе</td>
+                                <td>Telegram ID, имя профиля</td>
+                            </tr>
+                            <tr>
+                                <td>Поддержание связи</td>
+                                <td>Username профиля</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="section">
+                    <h3>Сроки хранения</h3>
+                    <p>Данные хранятся в течение 1 года с момента последнего обращения к чат-боту.</p>
+                </div>
+
+                <div class="section">
+                    <h3>Автоматический сбор</h3>
+                    <p>Некоторые данные предоставляются автоматически через Telegram и необходимы для функционирования бота.</p>
+                </div>
+            </div>
+
+            <!-- Страница 3: Права пользователя -->
+            <div class="page" id="page3">
+                <div class="section">
+                    <h2>3. Ваши права</h2>
+                    <p>Как субъект персональных данных, вы имеете право:</p>
+                    <ul>
+                        <li>Получать информацию об обработке ваших данных</li>
+                        <li>Требовать уточнения данных при их неточности</li>
+                        <li>Требовать удаления ваших данных</li>
+                        <li>Отозвать согласие на обработку в любое время</li>
+                    </ul>
+                </div>
+
+                <div class="highlight">
+                    <p><strong>Для реализации прав:</strong> Направьте запрос на email: <a href="mailto:info@flotenk.ru">info@flotenk.ru</a></p>
+                </div>
+            </div>
+
+            <!-- Страница 4: Обязанности оператора -->
+            <div class="page" id="page4">
+                <div class="section">
+                    <h2>4. Обязанности оператора</h2>
+                    <p>Мы обязуемся:</p>
+                    <ul>
+                        <li>Предоставлять информацию по запросу в течение 10 рабочих дней</li>
+                        <li>Уточнять, блокировать или удалять данные по требованию</li>
+                        <li>Уничтожать данные в течение 30 дней после отзыва согласия</li>
+                        <li>Хранить данные на территории РФ</li>
+                        <li>Обеспечивать безопасность обработки</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Страница 5: Безопасность и обновление -->
+            <div class="page" id="page5">
+                <div class="section">
+                    <h2>5. Безопасность данных</h2>
+                    <p>Мы принимаем необходимые меры для защиты ваших данных:</p>
+                    <ul>
+                        <li>Применяем организационные и технические меры защиты</li>
+                        <li>Используем антивирусную защиту</li>
+                        <li>Осуществляем контроль доступа</li>
+                        <li>Регулярно проводим аудит безопасности</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h2>6. Обновление политики</h2>
+                    <p>Мы можем обновлять настоящую Политику. Новая редакция вступает в силу с момента размещения в чат-боте.</p>
+                    <div class="highlight">
+                        <p><strong>Продолжение использования</strong> чат-бота после обновления означает ваше согласие с новыми условиями.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-indicator">
+            <div class="dot active" data-page="1"></div>
+            <div class="dot" data-page="2"></div>
+            <div class="dot" data-page="3"></div>
+            <div class="dot" data-page="4"></div>
+            <div class="dot" data-page="5"></div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" disabled>Назад</button>
+            <button class="nav-btn" id="nextBtn">Далее</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const totalPages = 5;
+
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const dots = document.querySelectorAll('.dot');
+
+        function updateNavigation() {
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            
+            if (currentPage === totalPages) {
+                nextBtn.textContent = 'Готово';
+            } else {
+                nextBtn.textContent = 'Далее';
+            }
+
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index + 1 === currentPage);
+            });
+
+            document.querySelectorAll('.page').forEach((page, index) => {
+                page.classList.toggle('active', index + 1 === currentPage);
+            });
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                updateNavigation();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateNavigation();
+            } else {
+                // Закрываем веб-приложение если пользователь в Telegram
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.close();
+                }
+            }
+        });
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                currentPage = parseInt(dot.dataset.page);
+                updateNavigation();
+            });
+        });
+
+        // Инициализация
+        updateNavigation();
+
+        // Инициализация Telegram Web App
+        if (window.Telegram && Telegram.WebApp) {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+        }
+    </script>
+</body>
+</html>
