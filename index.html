@@ -72,6 +72,12 @@
             color: #555;
             user-select: none;
         }
+        .phone-input-container:focus-within {
+            border-color: #40a7e3;
+        }
+        .phone-prefix {
+            user-select: none;
+        }
         #phone {
             border: none;
             border-radius: 0;
@@ -130,11 +136,11 @@
                 <div class="form-group">
                     <label for="phone">Номер телефона:</label>
                     <div class="phone-input-container">
-                        <span class="phone-prefix">+</span>
-                        <input type="tel" id="phone" required placeholder="79999999999" inputmode="numeric" pattern="[0-9]*">
+                        <span class="phone-prefix">+7</span>
+                        <input type="tel" id="phone" required placeholder="(___) ___-__-__" inputmode="numeric">
                     </div>
-                    <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
-                        Введите номер без + (только цифры)
+                    <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;" id="phoneHelpText">
+                        Введите 10 цифр номера
                     </small>
                 </div>
                 
@@ -186,19 +192,46 @@
         // Функция для валидации и форматирования телефона
         function setupPhoneValidation() {
             const phoneInput = document.getElementById('phone');
-            
-            // Обработчик ввода - оставляем только цифры
-            phoneInput.addEventListener('input', function(e) {
-                // Удаляем все нецифровые символы
-                this.value = this.value.replace(/\D/g, '');
-            });
-            
-            // Обработчик вставки - также очищаем от нецифровых символов
-            phoneInput.addEventListener('paste', function(e) {
+
+            const format = (value) => {
+                const digits = value.replace(/\D/g, '').substring(0, 10);
+                const len = digits.length;
+
+                if (len === 0) return '';
+                if (len <= 3) return `(${digits}`;
+                if (len <= 6) return `(${digits.substring(0, 3)}) ${digits.substring(3)}`;
+                if (len <= 8) return `(${digits.substring(0, 3)}) ${digits.substring(3, 6)}-${digits.substring(6)}`;
+                return `(${digits.substring(0, 3)}) ${digits.substring(3, 6)}-${digits.substring(6, 8)}-${digits.substring(8, 10)}`;
+            };
+
+            const handleInput = (e) => {
+                const input = e.target;
+                const selectionStart = input.selectionStart;
+                const oldValue = input.value;
+                const formattedValue = format(input.value);
+                input.value = formattedValue;
+
+                
+                if (selectionStart !== null) {
+                    let newCursorPos = selectionStart + (formattedValue.length - oldValue.length);
+                    if (e.inputType === 'deleteContentBackward' && [' ', ')', '(', '-'].includes(oldValue[selectionStart - 1])) {
+                        newCursorPos = selectionStart - 1;
+                    }
+                    
+                    if (newCursorPos < 0) newCursorPos = 0;
+                    input.setSelectionRange(newCursorPos, newCursorPos);
+                }
+            };
+
+            const handlePaste = (e) => {
                 e.preventDefault();
-                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
-                this.value = pastedText.replace(/\D/g, '');
-            });
+                const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+                const formatted = format(pastedData);
+                document.execCommand('insertText', false, formatted);
+            };
+
+            phoneInput.addEventListener('input', handleInput);
+            phoneInput.addEventListener('paste', handlePaste);
         }
         
         // Функция для прокрутки к элементу
@@ -243,12 +276,12 @@
             e.preventDefault();
             
             // Получаем и форматируем номер телефона
-            const phoneValue = document.getElementById('phone').value;
-            const formattedPhone = '+' + phoneValue;
+            const phoneValue = document.getElementById('phone').value.replace(/\D/g, '');
+            const formattedPhone = '+7' + phoneValue;
             
             // Валидация номера телефона
-            if (phoneValue.length < 10) {
-                alert('Пожалуйста, введите корректный номер телефона (минимум 10 цифр)');
+            if (phoneValue.length !== 10) {
+                alert('Пожалуйста, введите номер телефона полностью (10 цифр)');
                 document.getElementById('phone').focus();
                 return;
             }
