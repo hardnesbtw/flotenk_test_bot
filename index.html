@@ -1,64 +1,53 @@
 <script>
-    // Инициализация Telegram Web App
-    let tg = window.Telegram.WebApp;
-    
-    // Расширяем на весь экран
-    tg.expand();
-    tg.ready();
-    
-    console.log("Telegram Web App initialized");
-    console.log("tg version:", tg.version);
-    console.log("tg platform:", tg.platform);
-    
-    // Обработчик отправки формы
-    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        console.log("Form submitted");
-        
-        // Получаем и форматируем номер телефона
-        const phoneValue = document.getElementById('phone').value.replace(/\D/g, '');
-        const formattedPhone = '+7' + phoneValue;
-        
-        // Валидация номера телефона
-        if (phoneValue.length !== 10) {
-            alert('Пожалуйста, введите номер телефона полностью (10 цифр)');
-            document.getElementById('phone').focus();
-            return;
-        }
-        
-        // Собираем данные формы
-        const data = {
-            fio: document.getElementById('fio').value,
-            phone: formattedPhone,
-            email: document.getElementById('email').value,
-            customField: document.getElementById('customField').value,
-            formType: formType
-        };
+const tg = window.Telegram.WebApp;
 
-        console.log("Data to send:", data);
+tg.expand();
+tg.ready();
+
+// Показываем основную кнопку Telegram
+tg.MainButton.setText("ОТПРАВИТЬ").show();
+
+let formData = {};
+
+// Собираем данные при изменении полей
+document.querySelectorAll('input, textarea').forEach(element => {
+    element.addEventListener('input', function() {
+        formData = {
+            fio: document.getElementById('simpleFio').value,
+            phone: document.getElementById('simplePhone').value,
+            email: document.getElementById('simpleEmail').value,
+            customField: document.getElementById('simpleText').value,
+            formType: new URLSearchParams(window.location.search).get('type') || 'question'
+        };
         
-        // Проверяем доступность метода sendData
-        if (typeof tg.sendData !== 'function') {
-            console.error("tg.sendData is not a function!");
-            alert('Ошибка: функция отправки недоступна');
-            return;
-        }
-        
-        try {
-            // Отправляем данные в Telegram бот
-            console.log("Calling tg.sendData...");
-            tg.sendData(JSON.stringify(data));
-            console.log("tg.sendData called successfully");
-            
-            // Показываем сообщение об успехе
-            document.getElementById('feedbackForm').style.display = 'none';
-            document.getElementById('successMessage').style.display = 'block';
-            document.querySelector('.submit-container').style.display = 'none';
-            
-        } catch (error) {
-            console.error("Error in tg.sendData:", error);
-            alert('Ошибка отправки: ' + error.message);
+        // Включаем кнопку если все поля заполнены
+        if (formData.fio && formData.phone && formData.email && formData.customField) {
+            tg.MainButton.enable();
+        } else {
+            tg.MainButton.disable();
         }
     });
+});
+
+// Обработчик основной кнопки
+tg.MainButton.onClick(function() {
+    if (formData.fio && formData.phone && formData.email && formData.customField) {
+        tg.sendData(JSON.stringify(formData));
+        tg.close();
+    }
+});
+
+// Также оставляем обработчик обычной формы
+document.getElementById('simpleForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    tg.MainButton.click();
+});
+// Проверка возможностей Web App
+console.log('WebApp version:', window.Telegram.WebApp.version);
+console.log('Platform:', window.Telegram.WebApp.platform);
+console.log('sendData available:', typeof window.Telegram.WebApp.sendData === 'function');
+
+if (typeof window.Telegram.WebApp.sendData !== 'function') {
+    alert('Версия Telegram устарела. Обновите приложение.');
+}
 </script>
