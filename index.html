@@ -112,6 +112,12 @@
             margin-top: 15px;
             padding: 20px;
         }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
         
         @supports (-webkit-touch-callout: none) {
             body {
@@ -131,6 +137,7 @@
                 <div class="form-group">
                     <label for="fio">ФИО:</label>
                     <input type="text" id="fio" required placeholder="Введите ваше полное имя">
+                    <div class="error-message" id="fioError">Пожалуйста, введите ФИО</div>
                 </div>
                 
                 <div class="form-group">
@@ -142,16 +149,19 @@
                     <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;" id="phoneHelpText">
                         Введите 10 цифр номера
                     </small>
+                    <div class="error-message" id="phoneError">Пожалуйста, введите корректный номер телефона</div>
                 </div>
                 
                 <div class="form-group">
                     <label for="email">E-mail:</label>
                     <input type="email" id="email" required placeholder="example@mail.com">
+                    <div class="error-message" id="emailError">Пожалуйста, введите корректный email</div>
                 </div>
                 
                 <div class="form-group">
                     <label for="customField" id="customFieldLabel">Ваш вопрос:</label>
                     <textarea id="customField" rows="4" required placeholder="Опишите ваш вопрос"></textarea>
+                    <div class="error-message" id="customFieldError">Это поле обязательно для заполнения</div>
                 </div>
             </form>
             <div id="successMessage" class="success-message" style="display: none;">
@@ -160,7 +170,7 @@
         </div>
         
         <div class="submit-container">
-            <button type="submit" form="feedbackForm">Отправить</button>
+            <button type="button" id="submitButton">Отправить</button>
         </div>
     </div>
 
@@ -260,59 +270,107 @@
             });
         }
         
+        // Функции валидации
+        function validateForm() {
+            let isValid = true;
+            const fio = document.getElementById('fio').value.trim();
+            const phone = document.getElementById('phone').value.replace(/\D/g, '');
+            const email = document.getElementById('email').value.trim();
+            const customField = document.getElementById('customField').value.trim();
+            
+            // Валидация ФИО
+            if (fio === '') {
+                document.getElementById('fioError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('fioError').style.display = 'none';
+            }
+            
+            // Валидация телефона
+            if (phone.length !== 10) {
+                document.getElementById('phoneError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('phoneError').style.display = 'none';
+            }
+            
+            // Валидация email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                document.getElementById('emailError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('emailError').style.display = 'none';
+            }
+            
+            // Валидация текстового поля
+            if (customField === '') {
+                document.getElementById('customFieldError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('customFieldError').style.display = 'none';
+            }
+            
+            return isValid;
+        }
+        
         // Расширяем на весь экран и настраиваем форму
         tg.expand();
         setupForm(formType);
         setupPhoneValidation();
         setupInputHandlers();
         
-        // Получаем элемент формы и сообщения об успехе
+        // Получаем элементы DOM
         const form = document.getElementById('feedbackForm');
         const successMessage = document.getElementById('successMessage');
         const submitContainer = document.querySelector('.submit-container');
+        const submitButton = document.getElementById('submitButton');
         
         // Обработчик отправки формы
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+        submitButton.addEventListener('click', function() {
+            // Сбрасываем все ошибки
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Валидация формы
+            if (!validateForm()) {
+                return;
+            }
             
             // Получаем и форматируем номер телефона
             const phoneValue = document.getElementById('phone').value.replace(/\D/g, '');
             const formattedPhone = '+7' + phoneValue;
             
-            // Валидация номера телефона
-            if (phoneValue.length !== 10) {
-                alert('Пожалуйста, введите номер телефона полностью (10 цифр)');
-                document.getElementById('phone').focus();
-                return;
-            }
-            
             // Собираем данные формы
             const data = {
-                fio: document.getElementById('fio').value,
-                phone: formattedPhone, // Передаем номер с +
-                email: document.getElementById('email').value,
-                customField: document.getElementById('customField').value,
+                fio: document.getElementById('fio').value.trim(),
+                phone: formattedPhone,
+                email: document.getElementById('email').value.trim(),
+                customField: document.getElementById('customField').value.trim(),
                 formType: formType
             };
 
-            // Валидация остальных данных
-            if (!data.fio || !data.email || !data.customField) {
-                alert('Пожалуйста, заполните все поля');
-                return;
-            }
-
+            console.log("Отправляемые данные:", data); // Для отладки
+            
             // Отправляем данные в Telegram бот
-            tg.sendData(JSON.stringify(data));
-            
-            // Показываем сообщение об успехе
-            form.style.display = 'none';
-            successMessage.style.display = 'block';
-            submitContainer.style.display = 'none';
-            
-            // Закрываем Web App через 2 секунды
-            setTimeout(function() {
-                tg.close();
-            }, 2000);
+            try {
+                tg.sendData(JSON.stringify(data));
+                console.log("Данные отправлены успешно");
+                
+                // Показываем сообщение об успехе
+                form.style.display = 'none';
+                successMessage.style.display = 'block';
+                submitContainer.style.display = 'none';
+                
+                // Закрываем Web App через 2 секунды
+                setTimeout(function() {
+                    tg.close();
+                }, 2000);
+            } catch (error) {
+                console.error("Ошибка при отправке данных:", error);
+                alert("Произошла ошибка при отправке данных. Пожалуйста, попробуйте еще раз.");
+            }
         });
 
         // Дополнительная обработка для iOS
