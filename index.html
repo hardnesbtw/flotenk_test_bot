@@ -1,48 +1,28 @@
-<body>
-    <!-- Ваша форма -->
-    <form id="simpleForm">
-        <!-- поля формы -->
-        <button type="submit" id="htmlButton">Отправить форму</button>
-    </form>
-    
-    <!-- Запасная кнопка, которая показывается если Main Button недоступна -->
-    <button id="fallbackButton" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #40a7e3; color: white; padding: 15px; border: none; font-size: 17px;">
-        ОТПРАВИТЬ (запасной вариант)
-    </button>
-
-    <script>
-        const tg = window.Telegram.WebApp;
+@router.message()
+async def handle_fallback_data(message: types.Message, state: FSMContext):
+    """Обработчик для ручной отправки данных"""
+    try:
+        # Пытаемся распарсить JSON из текстового сообщения
+        data = json.loads(message.text)
         
-        if (tg && tg.MainButton) {
-            // Используем Main Button Telegram
-            tg.expand();
-            tg.MainButton.setText("ОТПРАВИТЬ").show();
-            tg.MainButton.onClick(handleFormSubmit);
+        # Проверяем, что это данные нашей формы
+        if all(key in data for key in ['fio', 'phone', 'email', 'customField', 'formType']):
+            logging.info(f"Received fallback data: {data}")
             
-            // Скрываем HTML-кнопку
-            document.getElementById('htmlButton').style.display = 'none';
-        } else {
-            // Показываем запасную кнопку
-            document.getElementById('fallbackButton').style.display = 'block';
-        }
-        
-        function handleFormSubmit() {
-            // ваша логика отправки данных
-            const data = { /* сбор данных */ };
-            if (tg && tg.sendData) {
-                tg.sendData(JSON.stringify(data));
-            }
-        }
-        
-        // Обработчик для HTML-кнопки
-        document.getElementById('simpleForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            handleFormSubmit();
-        });
-        
-        document.getElementById('fallbackButton').addEventListener('click', function(e) {
-            e.preventDefault();
-            handleFormSubmit();
-        });
-    </script>
-</body>
+            form_type = data.get('formType')
+            if form_type == 'question':
+                await send_quest(data['fio'], data['phone'], data['email'], data['customField'],
+                               message.from_user.username, message.from_user.id,
+                               message.message_id, None)
+                await message.answer("✅ Ваш вопрос получен! Спасибо за ручную отправку.")
+            elif form_type == 'application':
+                await send_apply(data['fio'], data['phone'], data['email'], data['customField'],
+                               message.from_user.username, message.from_user.id,
+                               message.message_id, None)
+                await message.answer("✅ Ваша заявка получена! Спасибо за ручную отправку.")
+                
+    except json.JSONDecodeError:
+        # Это не JSON, пропускаем
+        pass
+    except Exception as e:
+        logging.error(f"Error in fallback handler: {e}")
