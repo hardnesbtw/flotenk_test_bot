@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Форма обратной связи</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+            margin: 0;
+            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: -webkit-fill-available;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: white;
+        }
+        input:focus, textarea:focus {
+            border-color: #40a7e3;
+            outline: none;
+        }
+        
+        /* Стили для поля телефона с фиксированным префиксом */
+        .phone-input-container {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: white;
+        }
+        .phone-prefix {
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #ddd;
+            font-weight: 600;
+            color: #555;
+            user-select: none;
+        }
+        .phone-input-container:focus-within {
+            border-color: #40a7e3;
+        }
+        .phone-prefix {
+            user-select: none;
+        }
+        #phone {
+            border: none;
+            border-radius: 0;
+            flex: 1;
+        }
+        
+        .submit-container {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 15px 0;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        button {
+            background-color: #40a7e3;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            width: 100%;
+            font-weight: 600;
+        }
+        button:hover {
+            background-color: #2c96d4;
+        }
+        .success-message {
+            color: green;
+            text-align: center;
+            margin-top: 15px;
+            padding: 20px;
+        }
+        
+        @supports (-webkit-touch-callout: none) {
+            body {
+                padding-bottom: env(safe-area-inset-bottom, 20px);
+            }
+            .submit-container {
+                padding-bottom: calc(15px + env(safe-area-inset-bottom, 0px));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2 id="formTitle">Форма обратной связи</h2>
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label for="fio">ФИО:</label>
+                    <input type="text" id="fio" required placeholder="Введите ваше полное имя">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Номер телефона:</label>
+                    <div class="phone-input-container">
+                        <span class="phone-prefix">+7</span>
+                        <input type="tel" id="phone" required placeholder="(___) ___-__-__" inputmode="numeric">
+                    </div>
+                    <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;" id="phoneHelpText">
+                        Введите 10 цифр номера
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" required placeholder="example@mail.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="customField" id="customFieldLabel">Ваш вопрос:</label>
+                    <textarea id="customField" rows="4" required placeholder="Опишите ваш вопрос"></textarea>
+                </div>
+            </form>
+            <div id="successMessage" class="success-message" style="display: none;">
+                Данные отправлены успешно! Закройте окно.
+            </div>
+        </div>
+        
+        <div class="submit-container">
+            <button type="submit" form="feedbackForm">Отправить</button>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        let tg = window.Telegram.WebApp;
+        
+        // Получаем параметр из URL (тип формы)
+        const urlParams = new URLSearchParams(window.location.search);
+        const formType = urlParams.get('type') || 'question';
+        
+        // Настраиваем форму в зависимости от типа
+        function setupForm(type) {
+            const formTitle = document.getElementById('formTitle');
+            const fieldLabel = document.getElementById('customFieldLabel');
+            const textarea = document.getElementById('customField');
+            
+            if (type === 'question') {
+                formTitle.textContent = 'Задать вопрос';
+                fieldLabel.textContent = 'Ваш вопрос:';
+                textarea.placeholder = 'Опишите ваш вопрос подробно';
+            } else if (type === 'application') {
+                formTitle.textContent = 'Подать заявку';
+                fieldLabel.textContent = 'Детали заявки:';
+                textarea.placeholder = 'Опишите детали вашей заявки';
+            }
+        }
+        
+        // Функция для валидации и форматирования телефона
+        function setupPhoneValidation() {
+            const phoneInput = document.getElementById('phone');
+
+            const format = (value) => {
+                const digits = value.replace(/\D/g, '').substring(0, 10);
+                const len = digits.length;
+
+                if (len === 0) return '';
+                if (len <= 3) return `(${digits}`;
+                if (len <= 6) return `(${digits.substring(0, 3)}) ${digits.substring(3)}`;
+                if (len <= 8) return `(${digits.substring(0, 3)}) ${digits.substring(3, 6)}-${digits.substring(6)}`;
+                return `(${digits.substring(0, 3)}) ${digits.substring(3, 6)}-${digits.substring(6, 8)}-${digits.substring(8, 10)}`;
+            };
+
+            const handleInput = (e) => {
+                const input = e.target;
+                const selectionStart = input.selectionStart;
+                const oldValue = input.value;
+                const formattedValue = format(input.value);
+                input.value = formattedValue;
+
+                
+                if (selectionStart !== null) {
+                    let newCursorPos = selectionStart + (formattedValue.length - oldValue.length);
+                    if (e.inputType === 'deleteContentBackward' && [' ', ')', '(', '-'].includes(oldValue[selectionStart - 1])) {
+                        newCursorPos = selectionStart - 1;
+                    }
+                    
+                    if (newCursorPos < 0) newCursorPos = 0;
+                    input.setSelectionRange(newCursorPos, newCursorPos);
+                }
+            };
+
+            const handlePaste = (e) => {
+                e.preventDefault();
+                const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+                const formatted = format(pastedData);
+                document.execCommand('insertText', false, formatted);
+            };
+
+            phoneInput.addEventListener('input', handleInput);
+            phoneInput.addEventListener('paste', handlePaste);
+        }
+        
+        // Функция для прокрутки к элементу
+        function scrollToElement(element) {
+            element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+        
+        // Обработчики фокуса для полей ввода
+        function setupInputHandlers() {
+            const inputs = document.querySelectorAll('input, textarea');
+            const submitButton = document.querySelector('.submit-container');
+            
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    setTimeout(() => {
+                        if (this.tagName === 'TEXTAREA') {
+                            scrollToElement(submitButton);
+                        } else {
+                            scrollToElement(this);
+                        }
+                    }, 300);
+                });
+            });
+        }
+        
+        // Расширяем на весь экран и настраиваем форму
+        tg.expand();
+        setupForm(formType);
+        setupPhoneValidation();
+        setupInputHandlers();
+        
+        // Получаем элемент формы и сообщения об успехе
+        const form = document.getElementById('feedbackForm');
+        const successMessage = document.getElementById('successMessage');
+        const submitContainer = document.querySelector('.submit-container');
+        
+        // Обработчик отправки формы
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Получаем и форматируем номер телефона
+            const phoneValue = document.getElementById('phone').value.replace(/\D/g, '');
+            const formattedPhone = '+7' + phoneValue;
+            
+            // Валидация номера телефона
+            if (phoneValue.length !== 10) {
+                alert('Пожалуйста, введите номер телефона полностью (10 цифр)');
+                document.getElementById('phone').focus();
+                return;
+            }
+            
+            // Собираем данные формы
+            const data = {
+                fio: document.getElementById('fio').value,
+                phone: formattedPhone, // Передаем номер с +
+                email: document.getElementById('email').value,
+                customField: document.getElementById('customField').value,
+                formType: formType
+            };
+
+            // Валидация остальных данных
+            if (!data.fio || !data.email || !data.customField) {
+                alert('Пожалуйста, заполните все поля');
+                return;
+            }
+
+            // Отправляем данные в Telegram бот
+            tg.sendData(JSON.stringify(data));
+            
+            // Показываем сообщение об успехе
+            form.style.display = 'none';
+            successMessage.style.display = 'block';
+            submitContainer.style.display = 'none';
+            
+            // Закрываем Web App через 2 секунды
+            setTimeout(function() {
+                tg.close();
+            }, 2000);
+        });
+
+        // Дополнительная обработка для iOS
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            document.addEventListener('touchstart', function() {}, {passive: true});
+            
+            const inputs = document.querySelectorAll('input, textarea');
+            const originalBottom = submitContainer.style.bottom;
+            
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    submitContainer.style.position = 'relative';
+                });
+                
+                input.addEventListener('blur', function() {
+                    setTimeout(() => {
+                        submitContainer.style.position = 'sticky';
+                    }, 100);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
