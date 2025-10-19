@@ -1,53 +1,48 @@
-<script>
-const tg = window.Telegram.WebApp;
+<body>
+    <!-- Ваша форма -->
+    <form id="simpleForm">
+        <!-- поля формы -->
+        <button type="submit" id="htmlButton">Отправить форму</button>
+    </form>
+    
+    <!-- Запасная кнопка, которая показывается если Main Button недоступна -->
+    <button id="fallbackButton" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #40a7e3; color: white; padding: 15px; border: none; font-size: 17px;">
+        ОТПРАВИТЬ (запасной вариант)
+    </button>
 
-tg.expand();
-tg.ready();
-
-// Показываем основную кнопку Telegram
-tg.MainButton.setText("ОТПРАВИТЬ").show();
-
-let formData = {};
-
-// Собираем данные при изменении полей
-document.querySelectorAll('input, textarea').forEach(element => {
-    element.addEventListener('input', function() {
-        formData = {
-            fio: document.getElementById('simpleFio').value,
-            phone: document.getElementById('simplePhone').value,
-            email: document.getElementById('simpleEmail').value,
-            customField: document.getElementById('simpleText').value,
-            formType: new URLSearchParams(window.location.search).get('type') || 'question'
-        };
+    <script>
+        const tg = window.Telegram.WebApp;
         
-        // Включаем кнопку если все поля заполнены
-        if (formData.fio && formData.phone && formData.email && formData.customField) {
-            tg.MainButton.enable();
+        if (tg && tg.MainButton) {
+            // Используем Main Button Telegram
+            tg.expand();
+            tg.MainButton.setText("ОТПРАВИТЬ").show();
+            tg.MainButton.onClick(handleFormSubmit);
+            
+            // Скрываем HTML-кнопку
+            document.getElementById('htmlButton').style.display = 'none';
         } else {
-            tg.MainButton.disable();
+            // Показываем запасную кнопку
+            document.getElementById('fallbackButton').style.display = 'block';
         }
-    });
-});
-
-// Обработчик основной кнопки
-tg.MainButton.onClick(function() {
-    if (formData.fio && formData.phone && formData.email && formData.customField) {
-        tg.sendData(JSON.stringify(formData));
-        tg.close();
-    }
-});
-
-// Также оставляем обработчик обычной формы
-document.getElementById('simpleForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    tg.MainButton.click();
-});
-// Проверка возможностей Web App
-console.log('WebApp version:', window.Telegram.WebApp.version);
-console.log('Platform:', window.Telegram.WebApp.platform);
-console.log('sendData available:', typeof window.Telegram.WebApp.sendData === 'function');
-
-if (typeof window.Telegram.WebApp.sendData !== 'function') {
-    alert('Версия Telegram устарела. Обновите приложение.');
-}
-</script>
+        
+        function handleFormSubmit() {
+            // ваша логика отправки данных
+            const data = { /* сбор данных */ };
+            if (tg && tg.sendData) {
+                tg.sendData(JSON.stringify(data));
+            }
+        }
+        
+        // Обработчик для HTML-кнопки
+        document.getElementById('simpleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleFormSubmit();
+        });
+        
+        document.getElementById('fallbackButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            handleFormSubmit();
+        });
+    </script>
+</body>
